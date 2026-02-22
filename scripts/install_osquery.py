@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 install_osquery - openclaw-os-activity
 Install osquery for OpenClaw
@@ -31,6 +32,10 @@ VERSION = "5.21.0"
 BASE_URL = f"https://github.com/osquery/osquery/releases/download/{VERSION}"
 
 # SHA256 checksums for osquery releases
+# NOTE: These checksums should be periodically verified against official osquery
+# releases at: https://github.com/osquery/osquery/releases/
+# To update checksums: download the release and run:
+#   python3 -c "import hashlib; print(hashlib.sha256(open('file','rb').read()).hexdigest())"
 CHECKSUMS = {
     "windows": "cc9a8a177338dcda13eaa6c5a2bcdb70d5922a2a6e7174a24c8009ab5b7a6630",
     "linux": "b6cf1db2c541863725b934d758a3a66ba295aa7bda94b6a3547a8b36f556a859",
@@ -63,15 +68,15 @@ def verify_checksum(filepath, expected_checksum):
                 sha256_hash.update(byte_block)
         actual_checksum = sha256_hash.hexdigest()
         if actual_checksum.lower() == expected_checksum.lower():
-            print(f"✓ Checksum verified: {actual_checksum}")
+            print(f"Checksum verified: {actual_checksum}")
             return True
         else:
-            print(f"✗ Checksum mismatch!")
+            print(f"Checksum mismatch!")
             print(f"  Expected: {expected_checksum}")
             print(f"  Actual:   {actual_checksum}")
             return False
     except Exception as e:
-        print(f"✗ Failed to verify checksum: {e}")
+        print(f"Failed to verify checksum: {e}")
         return False
 
 def download_file(url, filepath, filename):
@@ -106,18 +111,94 @@ def download_file(url, filepath, filename):
     print(f"Downloaded to {filepath}")
     return True
 
-def extract_archive(archive_path, target_dir):
-    """Extract archive based on file type"""
-    if archive_path.endswith('.tar.gz'):
-        print(f"Extracting tar.gz to {target_dir}...")
+def validate_archive_member_path(member_path, target_dir):
+    """
+    Validate that a member path is safe and doesn't contain path traversal.
+    Returns the safe path or None if invalid.
+    """
+    # Convert to Path object for safe resolution
+    target_path = Path(target_dir).resolve()
+    
+    # Normalize the member path and remove leading slashes
+    normalized_path = member_path.lstrip('/\\')
+    
+    # Check for null bytes (path traversal technique)
+    if '\0' in normalized_path:
+        return None
+    
+    # Check for dangerous patterns
+    parts = Path(normalized_path).parts
+    for part in parts:
+        if part in ('..', '.', '') or part.startswith('~'):
+            return None
+    
+    # Construct the final path
+    final_path = target_path / normalized_path
+    final_path_resolved = final_path.resolve()
+    
+    # Ensure the resolved path is within target directory
+    try:
+        final_path_resolved.relative_to(target_path)
+        return final_path
+    except ValueError:
+        # Path is outside target directory
+        return None
+
+def extract_tar_safe(archive_path, target_dir):
+    """Safely extract a tar.gz archive with path validation"""
+    print(f"Extracting tar.gz to {target_dir}...")
+    target_path = Path(target_dir)
+    target_path.mkdir(parents=True, exist_ok=True)
+    
+    try:
         with tarfile.open(archive_path, 'r:gz') as tar:
-            tar.extractall(target_dir)
-            return True
-    elif archive_path.endswith('.zip'):
-        print(f"Extracting zip to {target_dir}...")
-        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-            zip_ref.extractall(target_dir)
+            for member in tar.getmembers():
+                # Validate member path
+                safe_path = validate_archive_member_path(member.name, target_dir)
+                if safe_path is None:
+                    print(f"Skipping unsafe path in archive: {member.name}")
+                    return False
+                
+                # Extract to safe location
+                member.name = str(safe_path.relative_to(target_path))
+                tar.extract(member, target_dir)
         return True
+    except Exception as e:
+        print(f"Failed to extract tar archive: {e}")
+        return False
+
+def extract_zip_safe(archive_path, target_dir):
+    """Safely extract a zip archive with path validation"""
+    print(f"Extracting zip to {target_dir}...")
+    target_path = Path(target_dir)
+    target_path.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            for info in zip_ref.infolist():
+                # Validate member path
+                safe_path = validate_archive_member_path(info.filename, target_dir)
+                if safe_path is None:
+                    print(f"Skipping unsafe path in archive: {info.filename}")
+                    return False
+                
+                # Extract to safe location
+                with zip_ref.open(info) as source:
+                    safe_path.parent.mkdir(parents=True, exist_ok=True)
+                    if not info.filename.endswith('/'):
+                        with open(safe_path, 'wb') as target:
+                            target.write(source.read())
+        return True
+    except Exception as e:
+        print(f"Failed to extract zip archive: {e}")
+        return False
+
+def extract_archive(archive_path, target_dir):
+    """Extract archive based on file type with path traversal protection"""
+    if archive_path.endswith('.tar.gz'):
+        return extract_tar_safe(archive_path, target_dir)
+    elif archive_path.endswith('.zip'):
+        return extract_zip_safe(archive_path, target_dir)
     else:
         return False
 
@@ -141,21 +222,21 @@ def install_windows(temp_dir, target_dir):
                 # Copy the entire osquery directory to target
                 try:
                     shutil.copytree(osquery_src, str(target_dir))
-                    print(f"✓ Copied osquery directory to {target_dir}")
+                    print(f"Copied osquery directory to {target_dir}")
                     
                     # Verify osqueryi.exe exists
                     osqueryi_path = target_dir / "osqueryi.exe"
                     if osqueryi_path.exists():
-                        print(f"✓ osqueryi.exe found at: {osqueryi_path}")
+                        print(f"osqueryi.exe found at: {osqueryi_path}")
                         return True
                     else:
-                        print(f"✗ osqueryi.exe not found in {target_dir}")
+                        print(f"osqueryi.exe not found in {target_dir}")
                         return False
                 except Exception as e:
-                    print(f"✗ Failed to copy osquery directory: {e}")
+                    print(f"Failed to copy osquery directory: {e}")
                     return False
     
-    print(f"✗ osquery directory not found in {temp_dir}")
+    print(f"osquery directory not found in {temp_dir}")
     return False
 
 def install_linux_macos(temp_dir, target_dir):
@@ -176,7 +257,7 @@ def install_linux_macos(temp_dir, target_dir):
                 osqueryd_path = candidate_path
     
     if not osqueryd_path:
-        print(f"✗ osqueryd binary not found in {temp_dir}")
+        print(f"osqueryd binary not found in {temp_dir}")
         return False
     
     print(f"Found osqueryd at: {osqueryd_path}")
@@ -190,11 +271,11 @@ def install_linux_macos(temp_dir, target_dir):
         shutil.copy2(osqueryd_path, str(target_file))
         # Make it executable
         os.chmod(str(target_file), 0o755)
-        print(f"✓ Copied osqueryd to {target_file}")
-        print(f"✓ osqueryi has been made executable")
+        print(f"Copied osqueryd to {target_file}")
+        print(f"osqueryi has been made executable")
         return True
     except Exception as e:
-        print(f"✗ Failed to copy osqueryd: {e}")
+        print(f"Failed to copy osqueryd: {e}")
         return False
 
 def main():
@@ -261,10 +342,10 @@ def main():
                 archive_path.unlink()
     
     if success:
-        print(f"✓ Successfully installed osquery")
+        print(f"Successfully installed osquery")
         return 0
     else:
-        print(f"✗ Failed to install osquery")
+        print(f"Failed to install osquery")
         return 1
 
 

@@ -19,15 +19,8 @@ if sys.platform.startswith("win"):
 OSQUERY = Path.home() / ".openclaw" / "tools" / "os-activity" / "osquery" / "osqueryi"
 OSQUERY = OSQUERY.with_suffix(".exe") if sys.platform.startswith("win") else OSQUERY
 if not OSQUERY.exists():
-    # Run install_osquery.py to install osquery if it doesn't exist
-    install_script = Path(__file__).parent / "install_osquery.py"
-    if not install_script.exists():
-        print(f"Error: {install_script} not found. Please run install_osquery.py to install osquery.", file=sys.stderr)
-        sys.exit(1)
-    subprocess.run([sys.executable, str(install_script)], check=True)
-    if not OSQUERY.exists():
-        print(f"Error: osquery installation failed. {OSQUERY} not found after installation.", file=sys.stderr)
-        sys.exit(1)
+    print(f"Error: osquery not found. {OSQUERY} not found.", file=sys.stderr)
+    sys.exit(1)
 
 def recent_files():
     query = "SELECT filename, path, type, mtime FROM recent_files ORDER BY mtime DESC LIMIT 100;"

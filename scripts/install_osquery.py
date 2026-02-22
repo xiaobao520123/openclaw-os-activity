@@ -9,6 +9,7 @@ import os
 import shutil
 import tarfile
 import zipfile
+import hashlib
 from pathlib import Path
 
 # Find the user's os
@@ -29,6 +30,13 @@ VERSION = "5.21.0"
 # Base URL for osquery releases
 BASE_URL = f"https://github.com/osquery/osquery/releases/download/{VERSION}"
 
+# SHA256 checksums for osquery releases
+CHECKSUMS = {
+    "windows": "cc9a8a177338dcda13eaa6c5a2bcdb70d5922a2a6e7174a24c8009ab5b7a6630",
+    "linux": "b6cf1db2c541863725b934d758a3a66ba295aa7bda94b6a3547a8b36f556a859",
+    "darwin": "c45e6a6dfe9ca9c5fc567b7224069060e7d1d02a257684667a23d40e9b01d8be",
+}
+
 def get_download_url():
     """Get the download URL based on the OS"""
     if OS == "windows":
@@ -40,13 +48,31 @@ def get_download_url():
             (f"{BASE_URL}/osquery-{VERSION}_1.linux_x86_64.tar.gz", "osquery.tar.gz"),
         ]
     elif OS == "darwin":
-        # Try ARM64 first, then x86_64
         return [
             (f"{BASE_URL}/osquery-{VERSION}_1.macos_arm64.tar.gz", "osquery.tar.gz"),
-            (f"{BASE_URL}/osquery-{VERSION}_1.macos_x86_64.tar.gz", "osquery.tar.gz"),
         ]
     else:
         raise ValueError(f"Unsupported OS: {OS}")
+
+def verify_checksum(filepath, expected_checksum):
+    """Verify the SHA256 checksum of a file"""
+    sha256_hash = hashlib.sha256()
+    try:
+        with open(filepath, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        actual_checksum = sha256_hash.hexdigest()
+        if actual_checksum.lower() == expected_checksum.lower():
+            print(f"✓ Checksum verified: {actual_checksum}")
+            return True
+        else:
+            print(f"✗ Checksum mismatch!")
+            print(f"  Expected: {expected_checksum}")
+            print(f"  Actual:   {actual_checksum}")
+            return False
+    except Exception as e:
+        print(f"✗ Failed to verify checksum: {e}")
+        return False
 
 def download_file(url, filepath, filename):
     """Download a file with progress bar"""
@@ -196,6 +222,14 @@ def main():
         try:
             if not download_file(download_url, str(archive_path), filename):
                 continue
+            
+            # Verify checksum
+            if OS in CHECKSUMS:
+                if not verify_checksum(str(archive_path), CHECKSUMS[OS]):
+                    print(f"Checksum verification failed for {filename}")
+                    continue
+            else:
+                print(f"Warning: No checksum defined for {OS}")
             
             # Create extract directory
             if extract_dir.exists():

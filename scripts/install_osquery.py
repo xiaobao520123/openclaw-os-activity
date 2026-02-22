@@ -9,7 +9,6 @@ import os
 import shutil
 import tarfile
 import zipfile
-import subprocess
 from pathlib import Path
 
 # Find the user's os
@@ -96,48 +95,6 @@ def extract_archive(archive_path, target_dir):
     else:
         return False
 
-def find_osqueryi_in_dir(search_dir):
-    """Find osqueryi binary in the directory"""
-    for root, dirs, files in os.walk(search_dir):
-        for file in files:
-            if file == "osqueryi" or file == "osqueryi.exe":
-                return os.path.join(root, file)
-    return None
-
-def create_symlink(link_path, target_path):
-    """Create a symlink from link_path to target_path"""
-    link_path = Path(link_path)
-    target_path = Path(target_path)
-    
-    # Remove existing symlink or file
-    if link_path.exists() or link_path.is_symlink():
-        link_path.unlink()
-    
-    try:
-        if OS == "windows":
-            # On Windows, create a junction or hard link
-            # Try to create a symlink with admin privileges
-            try:
-                os.symlink(target_path, link_path)
-                print(f"✓ Created symlink: {link_path} -> {target_path}")
-                return True
-            except OSError as e:
-                if "privilege" in str(e).lower():
-                    print(f"Note: Symlink creation requires admin privileges on Windows")
-                    print(f"Trying to copy file instead...")
-                    shutil.copy2(target_path, link_path)
-                    print(f"✓ Copied file: {link_path}")
-                    return True
-                raise
-        else:
-            # On Unix-like systems
-            os.symlink(target_path, link_path)
-            print(f"✓ Created symlink: {link_path} -> {target_path}")
-            return True
-    except Exception as e:
-        print(f"✗ Failed to create symlink: {e}")
-        return False
-
 def install_windows(temp_dir, target_dir):
     """Install osquery for Windows"""
     print("Installing osquery for Windows...")
@@ -175,7 +132,7 @@ def install_windows(temp_dir, target_dir):
     print(f"✗ osquery directory not found in {temp_dir}")
     return False
 
-def install_linux_macos(temp_dir, target_dir, archive_path):
+def install_linux_macos(temp_dir, target_dir):
     """Install osquery for Linux/macOS"""
     print(f"Installing osquery for {OS.upper()}...")
     
@@ -253,7 +210,7 @@ def main():
             if OS == "windows":
                 success = install_windows(extract_dir, target_dir)
             else:
-                success = install_linux_macos(extract_dir, target_dir, archive_path)
+                success = install_linux_macos(extract_dir, target_dir)
             
             if success:
                 break

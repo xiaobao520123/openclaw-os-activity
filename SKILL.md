@@ -15,13 +15,13 @@ By leveraging `osquery` tool, add additional information telling OpenClaw about 
 # Installation
 If you have not installed `osquery`, please run the following command to install it:
 ```shell
-python ~/.openclaw/skills/os-activity/scripts/install_osquery.py
+python ~/.openclaw/workspace/skills/os-activity/scripts/install_osquery.py
 ```
 
 # Quick Usage
 Find recently edited files:
 ```shell
-python skills/os-activity/scripts/recent_files.py
+python ~/.openclaw/workspace/skills/os-activity/scripts/recent_files.py
 ```
 
 # Example Output
@@ -36,11 +36,11 @@ openclaw.json|C:\Users\steve\.openclaw\openclaw.json|2026-02-22 17:10:05
 ## 1. Find recently edited files
 ### macOS
 ```shell
-python ~/.openclaw/skills/os-activity/scripts/recent_files.py
+python ~/.openclaw/workspace/skills/os-activity/scripts/recent_files.py
 ```
 ### Windows
 ```powershell
-python $Env:USERPROFILE\.openclaw\skills\os-activity\scripts\recent_files.py
+python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\recent_files.py
 ```
 ### Linux
 * Not supported

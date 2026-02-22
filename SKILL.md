@@ -1,6 +1,6 @@
 ---
 name: os-activity
-description: Persionalize your openclaw by learning your activity.
+description: Personalize your openclaw by learning your operating system activity.
 metadata:
   "openclaw": {
     "requires": {

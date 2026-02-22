@@ -6,7 +6,7 @@ Find recently edited files of the operating system
 """
 import sys
 import json
-import pathlib as Path
+from pathlib import Path
 import subprocess
 from datetime import datetime
 
@@ -16,11 +16,18 @@ if sys.platform.startswith("win"):
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-OSQUERY = Path.Path(__file__).parent.parent.parent.parent / "tools" / "os-activity" / "osquery" / "osqueryi"
+OSQUERY = Path.home() / ".openclaw" / "tools" / "os-activity" / "osquery" / "osqueryi"
 OSQUERY = OSQUERY.with_suffix(".exe") if sys.platform.startswith("win") else OSQUERY
 if not OSQUERY.exists():
-    print("osquery not found, please run install_osquery.py first")
-    sys.exit(1)
+    # Run install_osquery.py to install osquery if it doesn't exist
+    install_script = Path(__file__).parent / "install_osquery.py"
+    if not install_script.exists():
+        print(f"Error: {install_script} not found. Please run install_osquery.py to install osquery.", file=sys.stderr)
+        sys.exit(1)
+    subprocess.run([sys.executable, str(install_script)], check=True)
+    if not OSQUERY.exists():
+        print(f"Error: osquery installation failed. {OSQUERY} not found after installation.", file=sys.stderr)
+        sys.exit(1)
 
 def recent_files():
     query = "SELECT filename, path, type, mtime FROM recent_files ORDER BY mtime DESC LIMIT 100;"

@@ -15,7 +15,7 @@ Find the books the user is reading recently.
 ## TODO
 
 - [x] User activity retrieval based on `osquery`.
-- [] Long-term memory roll-out.
+- [ ] Long-term memory roll-out.
 
 ## License
 

@@ -14,13 +14,13 @@ By leveraging `osquery` tool, add additional information telling OpenClaw about 
 
 # Installation
 If you have not installed `osquery`, please run the following command to install it:
-```shell
+```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/install_osquery.py
 ```
 
 # Quick Usage
 Find recently edited files:
-```shell
+```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/recent_files.py
 ```
 
@@ -35,7 +35,7 @@ openclaw.json|C:\Users\steve\.openclaw\openclaw.json|2026-02-22 17:10:05
 # More commands
 ## 1. Find recently edited files
 ### macOS
-```shell
+```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/recent_files.py
 ```
 ### Windows
@@ -46,7 +46,7 @@ python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\recent_fi
 * Not supported
 ## 2. Find installed programs
 ### macOS
-```shell
+```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/programs.py
 ```
 ### Windows
@@ -57,7 +57,7 @@ python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\programs.
 * Not supported
 ## 3. Find running programs
 ### macOS
-```shell
+```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/processes.py
 ```
 ### Windows
@@ -65,4 +65,6 @@ python ~/.openclaw/workspace/skills/os-activity/scripts/processes.py
 python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\processes.py
 ```
 ### Linux
-* Not supported
+```bash
+python ~/.openclaw/workspace/skills/os-activity/scripts/processes.py
+```

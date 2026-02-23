@@ -44,3 +44,25 @@ python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\recent_fi
 ```
 ### Linux
 * Not supported
+## 2. Find installed programs
+### macOS
+```shell
+python ~/.openclaw/workspace/skills/os-activity/scripts/programs.py
+```
+### Windows
+```powershell
+python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\programs.py
+```
+### Linux
+* Not supported
+## 3. Find running programs
+### macOS
+```shell
+python ~/.openclaw/workspace/skills/os-activity/scripts/processes.py
+```
+### Windows
+```powershell
+python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\processes.py
+```
+### Linux
+* Not supported

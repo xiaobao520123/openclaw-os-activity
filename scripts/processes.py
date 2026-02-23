@@ -57,22 +57,22 @@ def processes():
     print("PID|Name|Parent|Path|Start Time|Command Line|Current Working Directory|User Time|System Time|Percent Processor Time")
     for process in processes:
         try:
-            pid = process.get("pid", "N/A")
-            name = process.get("name", "N/A")
-            parent = process.get("parent", "N/A")
-            path = process.get("path", "N/A")
-            start_time = process.get("start_time", "N/A")
-            cmdline = process.get("cmdline", "N/A")
-            cwd = process.get("cwd", "N/A")
-            user_time = process.get("user_time", "N/A")
-            system_time = process.get("system_time", "N/A")
-            percent_processor_time = process.get("percent_processor_time", "N/A")
+            pid = process.get("pid", "")
+            name = process.get("name", "")
+            parent = process.get("parent", "")
+            path = process.get("path", "")
+            start_time = process.get("start_time", "")
+            cmdline = process.get("cmdline", "")
+            cwd = process.get("cwd", "")
+            user_time = process.get("user_time", "")
+            system_time = process.get("system_time", "")
+            percent_processor_time = process.get("percent_processor_time", "")
             
-            if start_time != "N/A":
+            if start_time != "":
                 try:
                     start_time = datetime.fromtimestamp(int(start_time)).strftime("%Y-%m-%d %H:%M:%S")
                 except (TypeError, ValueError, OSError):
-                    start_time = "N/A"
+                    start_time = ""
 
             print(f"{pid}|{name}|{parent}|{path}|{start_time}|{cmdline}|{cwd}|{user_time}|{system_time}|{percent_processor_time}")
         except (TypeError, ValueError, OSError) as e:

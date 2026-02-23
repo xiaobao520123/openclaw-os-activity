@@ -44,7 +44,16 @@ python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\recent_fi
 ```
 ### Linux
 * Not supported
-## 2. Find installed programs
+## 2. Find recently accessed directories
+### macOS
+* Not supported
+### Windows
+```powershell
+python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\recent_dirs.py
+```
+### Linux
+* Not supported
+## 3. Find installed programs
 ### macOS
 ```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/programs.py
@@ -55,7 +64,7 @@ python $Env:USERPROFILE\.openclaw\workspace\skills\os-activity\scripts\programs.
 ```
 ### Linux
 * Not supported
-## 3. Find running programs
+## 4. Find running programs
 ### macOS
 ```bash
 python ~/.openclaw/workspace/skills/os-activity/scripts/processes.py

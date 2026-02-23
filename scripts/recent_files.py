@@ -57,13 +57,13 @@ def recent_files():
     print("Filename|Path|Type|Last Edited Time")
     for file in files:
         try:
-            filename = file.get("filename", "N/A")
-            path = file.get("path", "N/A")
-            file_type = file.get("type", "N/A")
+            filename = file.get("filename", "")
+            path = file.get("path", "")
+            file_type = file.get("type", "")
             mtime_ts = file.get("mtime", 0)
             
             if not mtime_ts:
-                mtime_str = "N/A"
+                mtime_str = ""
             else:
                 mtime_str = datetime.fromtimestamp(int(mtime_ts)).strftime("%Y-%m-%d %H:%M:%S")
             
